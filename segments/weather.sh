@@ -6,11 +6,8 @@ update_period=600
 TMUX_POWERLINE_SEG_WEATHER_DATA_PROVIDER_DEFAULT="yahoo"
 TMUX_POWERLINE_SEG_WEATHER_UNIT_DEFAULT="c"
 TMUX_POWERLINE_SEG_WEATHER_UPDATE_PERIOD_DEFAULT="600"
-if shell_is_bsd; then
-    TMUX_POWERLINE_SEG_WEATHER_GREP_DEFAULT="/usr/local/bin/grep"
-else
-    TMUX_POWERLINE_SEG_WEATHER_GREP_DEFAULT="grep"
-fi
+TMUX_POWERLINE_SEG_WEATHER_GREP_DEFAULT="/usr/bin/grep"
+CITY_CODE="946738"
 
 
 generate_segmentrc() {
@@ -28,7 +25,8 @@ export TMUX_POWERLINE_SEG_WEATHER_GREP="${TMUX_POWERLINE_SEG_WEATHER_GREP_DEFAUL
 # 1. Go to Yahoo weather http://weather.yahoo.com/
 # 2. Find the weather for you location
 # 3. Copy the last numbers in that URL. e.g. "http://weather.yahoo.com/united-states/california/newport-beach-12796587/" has the numbers "12796587"
-export TMUX_POWERLINE_SEG_WEATHER_LOCATION=""
+export TMUX_POWERLINE_SEG_WEATHER_LOCATION="${CITY_CODE}"
+
 EORC
 	echo "$rccontents"
 }
@@ -61,8 +59,9 @@ __process_settings() {
 	if [ -z "$TMUX_POWERLINE_SEG_WEATHER_GREP" ]; then
 		export TMUX_POWERLINE_SEG_WEATHER_GREP="${TMUX_POWERLINE_SEG_WEATHER_GREP_DEFAULT}"
 	fi
-	if [ -z "$TMUX_POWERLINE_SEG_WEATHER_LOCATION" ]; then
-		echo "No weather location specified.";
+	if [ -z "$CITY_CODE" ]; then
+    echo "No data for city:${CITY_CODE}"
+		#echo "No weather location specified.";
 		exit 8
 	fi
 }
@@ -84,7 +83,7 @@ __yahoo_weather() {
 	fi
 
 	if [ -z "$degree" ]; then
-		weather_data=$(curl --max-time 4 -s "http://weather.yahooapis.com/forecastrss?w=${TMUX_POWERLINE_SEG_WEATHER_LOCATION}&u=${TMUX_POWERLINE_SEG_WEATHER_UNIT}")
+		weather_data=$(curl --max-time 4 -s "http://weather.yahooapis.com/forecastrss?w=${CITY_CODE}&u=${TMUX_POWERLINE_SEG_WEATHER_UNIT}")
 		if [ "$?" -eq "0" ]; then
 			error=$(echo "$weather_data" | grep "problem_cause\|DOCTYPE");
 			if [ -n "$error" ]; then
